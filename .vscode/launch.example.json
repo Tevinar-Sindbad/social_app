@@ -1,0 +1,50 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "social_app (debug mode)",
+            "request": "launch",
+            "type": "dart",
+            "toolArgs": [
+                "--dart-define=APP_ENV=local",
+                "--dart-define=SUPABASE_URL=http://127.0.0.1:54321",
+                "--dart-define=SUPABASE_PUBLISHABLE_KEY=replace-with-your-supabase-publishable-key",
+                "--dart-define=SUPABASE_EMAIL_REDIRECT_URL=socialapp://auth-callback",
+                "--dart-define=BACKEND_BASE_URL=http://localhost:3000",
+                "--dart-define=SENTRY_RELEASE=local-dev",
+                "--dart-define=SENTRY_TRACES_SAMPLE_RATE=1.0"
+            ]
+        },
+        {
+            "name": "social_app (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "toolArgs": [
+                "--dart-define=APP_ENV=local",
+                "--dart-define=SUPABASE_URL=http://127.0.0.1:54321",
+                "--dart-define=SUPABASE_PUBLISHABLE_KEY=replace-with-your-supabase-publishable-key",
+                "--dart-define=SUPABASE_EMAIL_REDIRECT_URL=socialapp://auth-callback",
+                "--dart-define=BACKEND_BASE_URL=http://localhost:3000",
+                "--dart-define=SENTRY_RELEASE=local-dev",
+                "--dart-define=SENTRY_TRACES_SAMPLE_RATE=1.0"
+            ]
+        },
+        {
+            "name": "social_app (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "toolArgs": [
+                "--dart-define=APP_ENV=local",
+                "--dart-define=SUPABASE_URL=http://127.0.0.1:54321",
+                "--dart-define=SUPABASE_PUBLISHABLE_KEY=replace-with-your-supabase-publishable-key",
+                "--dart-define=SUPABASE_EMAIL_REDIRECT_URL=socialapp://auth-callback",
+                "--dart-define=BACKEND_BASE_URL=http://localhost:3000",
+                "--dart-define=SENTRY_RELEASE=local-dev",
+                "--dart-define=SENTRY_TRACES_SAMPLE_RATE=1.0"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,78 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:path_provider/path_provider.dart' as path_provider;
+import 'package:social_app/core/network/dio_http_downloader.dart';
+
+/// A disk cache for remote image files.
+// ignore one_member_abstracts warning because this interface is expected to
+// be mocked in tests and more methods may be added in the future.
+// ignore: one_member_abstracts
+abstract interface class ImageFileCache {
+  /// Returns a cached file when available or downloads and persists it.
+  Future<File?> getOrDownload({
+    required String cacheKey,
+    required String imageUrl,
+  });
+}
+
+/// An implementation of [ImageFileCache] that uses the device's file system
+/// to cache images.
+class ImageFileCacheImpl implements ImageFileCache {
+  /// Creates an [ImageFileCacheImpl].
+  ImageFileCacheImpl({
+    required DioHttpDownloader dioHttpDownloader,
+  }) : _dioHttpDownloader = dioHttpDownloader;
+
+  final DioHttpDownloader _dioHttpDownloader;
+
+  /// Resolves the directory where downloaded images are cached locally.
+  Future<Directory> get _cacheDir async {
+    final baseDir = await path_provider.getApplicationDocumentsDirectory();
+    final dir = Directory('${baseDir.path}/image_cache');
+    if (!dir.existsSync()) {
+      await dir.create(recursive: true);
+    }
+    return dir;
+  }
+
+  /// Builds the cache file path for one logical image cache key.
+  Future<File> _fileFor(String cacheKey) async {
+    final dir = await _cacheDir;
+    return File('${dir.path}/$cacheKey.img');
+  }
+
+  /// Returns the cached file for [cacheKey] when it already exists on disk.
+  Future<File?> _getCachedFile(String cacheKey) async {
+    final file = await _fileFor(cacheKey);
+    if (file.existsSync()) {
+      return file;
+    }
+    return null;
+  }
+
+  @override
+  Future<File?> getOrDownload({
+    required String cacheKey,
+    required String imageUrl,
+  }) async {
+    final cachedFile = await _getCachedFile(cacheKey);
+    if (cachedFile != null) {
+      return cachedFile;
+    }
+
+    try {
+      final bytes = await _downloadImage(Uri.parse(imageUrl));
+      final file = await _fileFor(cacheKey);
+      await file.writeAsBytes(bytes, flush: true);
+      return file;
+    } on Exception {
+      return null;
+    }
+  }
+
+  /// Downloads the raw bytes for one remote image URL.
+  Future<Uint8List> _downloadImage(Uri uri) {
+    return _dioHttpDownloader.downloadBytes(uri);
+  }
+}

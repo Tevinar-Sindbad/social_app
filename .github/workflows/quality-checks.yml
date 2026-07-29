@@ -1,0 +1,130 @@
+name: Quality Checks
+
+# Cancel the running run if there is one in progress, to launch instead the current one
+concurrency:
+  group: quality-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Grant the workflow read-only access to repository contents.
+permissions:
+  # Allow the workflow to read the source code and metadata from the repository.
+  contents: read
+
+# Run this workflow on pull requests and on pushes to the main branch.
+on:
+  # Trigger the workflow whenever a pull request event occurs.
+  pull_request:
+  # Trigger the workflow whenever code is pushed to main.
+  push:
+    # Limit push-based execution to the main branch only.
+    branches:
+      - main
+
+# quality-checks job
+jobs:
+  # Run the main quality checks on Ubuntu
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Download the repository code into the runner
+      - name: Checkout repository
+        # Use the official GitHub checkout action to clone the repository into the runner.
+        uses: actions/checkout@v5
+        with:
+          # Fetch the full Git history to improve SonarQube analysis relevance and PR comparison accuracy.
+          fetch-depth: 0
+
+      # Install Flutter and make Flutter commands available in the next steps
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+
+      # Download and resolve project dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Run code generation to rebuild all generated files from the current source code
+      - name: Run code generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      # Fail if code generation produced uncommitted changes, meaning generated files were out of date
+      - name: Check generated files are up to date
+        run: git diff --exit-code
+
+      # Ensure dependency resolution does not modify the committed lockfile
+      - name: Check lockfile consistency
+        run: git diff --exit-code pubspec.lock
+
+      # Fail if files are not properly formatted
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      # Run Flutter static analysis
+      - name: Run static analysis
+        run: flutter analyze
+
+      # Run unit and widget tests with coverage enabled to generate the LCOV report used by SonarQube.
+      - name: Run tests with coverage
+        # Generate the coverage/lcov.info report expected by SonarQube Cloud.
+        run: flutter test --coverage
+
+      # Launch the SonarQube Cloud scan for this repository and this commit/PR.
+      - name: Run SonarQube scan
+        # Use the official SonarQube scan action to send analysis data to SonarQube Cloud.
+        uses: SonarSource/sonarqube-scan-action@59db25f34e16620e48ab4bb9e4a5dce155cb5432 # v8.0.0
+        env:
+          # Provide the authentication token stored in GitHub Actions secrets to authorize the scan.
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Verify that the project can successfully compile into an Android app
+  android-build:
+    needs: code-quality
+    runs-on: ubuntu-latest
+
+    steps:
+      # Download the repository code into the runner
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      # Install Flutter and make Flutter commands available in the next steps
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+
+      # Download and resolve project dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Verify that the project can successfully compile into an Android app
+      - name: Verify Android build
+        run: flutter build apk --debug
+
+  # Verify that the project can successfully compile into an iOS app
+  ios-build:
+    needs: code-quality
+    runs-on: macos-latest
+
+    steps:
+      # Download the repository code into the runner
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      # Install Flutter and make Flutter commands available in the next steps
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+
+      # Download and resolve project dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Verify that the project can successfully compile into an iOS app
+      - name: Verify iOS build
+        run: flutter build ios --no-codesign

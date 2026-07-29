@@ -1,0 +1,66 @@
+name: Release Validation
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: release-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Fetch the repository code for the workflow run.
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Install the Flutter SDK on the runner.
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+
+      # Download Dart and Flutter package dependencies.
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Build the Android release bundle (.aab).
+      - name: Build Android App Bundle
+        run: flutter build appbundle --release
+
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      # Fetch the repository code for the workflow run.
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Install the Flutter SDK on the runner.
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+
+      # Download Dart and Flutter package dependencies.
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Install CocoaPods dependencies for the iOS project.
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install
+
+      # Build the iOS release without code signing.
+      - name: Build iOS release
+        run: flutter build ipa --release --no-codesign

@@ -1,0 +1,18 @@
+{
+  "dart.runPubGetOnPubspecChanges": "always",
+  "dart.coverageExcludePatterns": [
+    "**/lib/main.dart",
+    "**/lib/app/bootstrap/**",
+    "**/lib/app/router/**",
+    "**/lib/core/config/**",
+    "**/lib/core/errors/**",
+    "**/lib/core/local_database/**",
+    "**/lib/core/logging/**",
+    "**/lib/core/media/**",
+    "**/lib/core/network/**",
+    "**/lib/core/theme/**",
+    "**/lib/core/use_case_interfaces/**",
+    "**/lib/core/ui/widgets/**"
+  ],
+  "dart.flutterSdkPath": ".fvm/versions/3.41.6"
+}

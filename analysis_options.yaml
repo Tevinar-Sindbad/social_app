@@ -1,0 +1,15 @@
+# Base recommandee pour les projets Flutter.
+include: package:very_good_analysis/analysis_options.yaml
+
+
+analyzer:
+  # Fichiers/dossiers exclus de l'analyse.
+  exclude:
+    - build/**
+    - .dart_tool/**
+    - "**/*.g.dart"
+    - "**/*.mocks.dart"
+
+  # Ajuste la sévérité de certains diagnostics.
+  errors:
+    todo: warning
