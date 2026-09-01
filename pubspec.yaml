@@ -58,7 +58,7 @@ dev_dependencies:
   drift_dev: ^2.32.1
   flutter_test:
     sdk: flutter
-  go_router_builder: ^4.2.1
+  go_router_builder: ^4.4.1
   mocktail: ^1.0.4
   path_provider_platform_interface: ^2.1.2
   very_good_analysis: ^10.2.0
