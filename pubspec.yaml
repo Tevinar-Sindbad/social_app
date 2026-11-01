@@ -45,7 +45,7 @@ dependencies:
   image_picker: ^1.2.1
   intl: ^0.20.2
   path_provider: ^2.1.0
-  realtime_client: ^2.7.1
+  realtime_client: ^2.13.2
   sentry_flutter: ^9.21.0
   supabase_flutter: ^2.15.0
   talker: ^5.1.16
