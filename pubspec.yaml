@@ -33,7 +33,7 @@ dependencies:
   cupertino_icons: ^1.0.9
   dio: ^5.9.2
   dotted_border: ^3.1.0
-  drift: ^2.32.1
+  drift: ^2.34.4
   drift_flutter: ^0.3.0
   flutter:
     sdk: flutter
